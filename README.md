@@ -25,12 +25,12 @@ Enkele features waarmeer het basisscript is uitgebreid:
 - het is relatief eenvoudig een ander merk batterij zoals te bevragen, zie de **systeemk**-setup.js als voorbeeld, waarin de benodigde device capabilities per batterij staan waarover gerapporteerd. 
 
 
-
 Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. Helaas biedt Homey geen makkelijke manier aan om dit soort flows te exporteren cq importeren. Dit is handwerk en vergt kennis van hoe je een Advanced Flow kunt designen. 
 - Sla de inhoud per .js bestand op als Homeyscript, met gelijksoortige naamgeving (naam zonder de extensie);
 - Maak de globale variabelen aan (zie verderop);
 - Maak de Advanced flow aan met daarbij de 'then' Homeyscipt - as script kaartjes, waarbij je per kaartje de naam van het overeenkomstige bestand kiest;
-- Door met de muis op de '23:59 Card' te staan, is deze afzonderlijk te starten. Voer eventueel eenmalig uit als setup.
+- Door met de muis op de '23:59 kaartje' te staan, is deze afzonderlijk te starten. Voer eventueel eenmalig uit als setup. De scripts zijn ook  uit te voeren in Homeyscript (< / >) mode zelf natuurlijk.
+
 
 ![Homey-FrankEnergie](./Homey-FrankEnergie.png)
 
@@ -40,6 +40,9 @@ Instelbaar welke periode (om de 15 minuten in dit voorbeeld) wordt de API van on
 
 Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de(ont)laad kWhs. De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy.
 
-De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn.
+![Tijdlijn voorbeeld](./Tijdlijn%20voorbeeld.png)
+
+De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Het betreft hier een 'script met argument' kaartje met een komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
+
 
 ![Homey-variabelen](./Homey-variabelen.png)
