@@ -35,14 +35,25 @@ Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. H
 ![Homey-FrankEnergie](./Homey-FrankEnergie.png)
 
 
+De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Het betreft hier een 'script met argument' kaartje met een komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
+
+![Homey-variabelen](./Homey-variabelen.png)
+
+
 De Sessy API (als bijvoorbeeld) levert geen dagtotalen (alleen grand totals). Voor de rapportage per dag is opgelost met een delta gemiddelde te bepalen t.o.v. voorgaande dag.
 Instelbaar welke periode (om de 15 minuten in dit voorbeeld) wordt de API van onbalansmarkt.com gevoed met nieuwe gegevens. 
 
-Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de(ont)laad kWhs. De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy.
+Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de(ont)laad kWhs. Bij de 'teller op nul' notificatie zie je de vorige dag opgeslagen waarden.
 
 ![Tijdlijn voorbeeld](./Tijdlijn%20voorbeeld.png)
 
-De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Het betreft hier een 'script met argument' kaartje met een komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
 
+De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals de AlphaESS.
+Zie daarvoor de scripts sessy-setup.js en alphaESS-setup.js:
 
-![Homey-variabelen](./Homey-variabelen.png)
+| Systeem | Batterij % | kWh laadtotaal | kWh ontlaad totaal | Cycle count | Driver-Id match|
+|---|---|---|---|---|---|
+| Sessy | measure_battery | meter_power.import | meter_power.export | - | sessy |
+| AlphaESS | measure_battery | meter_power.charged | meter_power.discharged | - | alpaess |
+| ZP Nexus | measure_battery | meter_power.daily_import | meter_power.daily_export | cycle_count? | ? 
+
