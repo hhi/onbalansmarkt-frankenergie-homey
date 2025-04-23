@@ -43,17 +43,26 @@ De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow varia
 De Sessy API (als bijvoorbeeld) levert geen dagtotalen (alleen grand totals). Voor de rapportage per dag is opgelost met een delta gemiddelde te bepalen t.o.v. voorgaande dag.
 Instelbaar welke periode (om de 15 minuten in dit voorbeeld) wordt de API van onbalansmarkt.com gevoed met nieuwe gegevens. 
 
-Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de(ont)laad kWhs. Bij de 'teller op nul' notificatie zie je de vorige dag opgeslagen waarden.
+Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de naar beneden afgeroden (ont)laad kWhs. Bij de 'teller op nul' notificatie zie je de vorige dag intern opgeslagen waarden.
 
 ![Tijdlijn voorbeeld](./Tijdlijn%20voorbeeld.png)
 
 
-De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals de AlphaESS.
+De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals de AlphaESS. Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan ontbreken bij Sessy, AlphaESS en SolarEdge StoreEdge kWh ont(laad) totalen.
 Zie daarvoor de scripts sessy-setup.js en alphaESS-setup.js:
 
-| Systeem | Batterij % | kWh laadtotaal | kWh ontlaad totaal | Cycle count | Driver-Id match|
-|---|---|---|---|---|---|
-| Sessy | measure_battery | meter_power.import | meter_power.export | - | sessy |
-| AlphaESS | measure_battery | meter_power.charged | meter_power.discharged | - | alpaess |
-| ZP Nexus | measure_battery | meter_power.daily_import | meter_power.daily_export | cycle_count? | ? 
+| Systeem | Batterij % | kWh laadtotaal | kWh ontlaadtotaal | Driver-Id | Class | delta verwerking |
+|---|---|---|---|---|---|---|
+| Sessy | measure_battery | meter_power.import | meter_power.export | sessy | battery | Yes |
+| AlphaESS | measure_battery | meter_power.charged | meter_power.discharged | alpaess | battery | Yes |
+| ZP Nexus | measure_battery | meter_power.daily_import | meter_power.daily_export |  zonneplan | battery | No |
+| Homevolt | measure_battery | meter_power.imported | meter_power.exported | homevolt-battery | battery | Yes |
+| SolarEdge SigEnergy | measure_battery | meter_power.daily_charge | meter_power.daily_discharge | sigenergy  | solarpanel | No |
+| SolarEdge Solax | measure_battery | meter_power.today_batt_input | meter_power.today_batt_output | solax | solarpanel | No |
+| SolarEdge Wattsonic | measure_battery | meter_power.today_batt_input | meter_power.today_batt_output | wattsonic | solarpanel | No |
+| SolarEdge Sungrow | measure_battery | meter_power.today_batt_input | meter_power.today_batt_output | sungrow | solarpanel | No |
+| SolarEdge Huawei | measure_battery | meter_power.today_batt_input | meter_power.today_batt_output | huawei | solarpanel | No |
+| SolarEdge Growatt | measure_battery | meter_power.today_batt_input | meter_power.today_batt_output | growatt | solarpanel | No |
+| SolarEdge StoreEdge | measure_battery | meter_power.import | meter_power.export | storeedge | solarpanel | Yes |
 
+De aan SolarEdge Modbus geleerde batterijen worden naar verwachting bevraagd via de 'SolarEdge + Growatt TCP modbus' App. Maak je eigen setup script op basis van bovenstaande waarden en vervang in de flow het 'sessy-setup' kaartje met je eigen homeyscript variant.

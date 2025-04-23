@@ -14,7 +14,7 @@ const averageExportPower = await getVariableValue('averageExportPower', 0);
 const prevAverageImportPower = await getVariableValue('prevAverageImportPower', 0);
 const prevAverageExportPower = await getVariableValue('prevAverageExportPower', 0);
 const averageBatteryLevel = await getVariableValue('averageBatteryLevel', 0);
-
+const battery_delta = await getVariableValue('battery_delta', 'No');
 
 // Log the current values (optional)
 console.log('averageImportPower:', averageImportPower);
@@ -22,14 +22,21 @@ console.log('averageExportPower:', averageExportPower);
 console.log('prevAverageImportPower:', prevAverageImportPower);
 console.log('prevAverageExportPower:', prevAverageExportPower);
 console.log('averageBatteryLevel:', averageBatteryLevel);
+console.log('battery_delta:', battery_delta);
 
+var deltaImportPower = averageImportPower;
+var deltaExportPower = averageExportPower;
 
-const deltaImportPower = averageImportPower - prevAverageImportPower;
-const deltaExportPower = averageExportPower - prevAverageExportPower;
+// batterysystemen zonder dagtotalen passen delta berekening toe
+if (battery_delta == 'Yes') {
+  deltaImportPower -= prevAverageImportPower;
+  deltaExportPower -= prevAverageExportPower
+}
+
 
 // Update delta values
-await setVariableValue('deltaImportPower', Math.round(deltaImportPower) );
-await setVariableValue('deltaExportPower', Math.round(deltaExportPower) );
+await setVariableValue('deltaImportPower', Math.round(deltaImportPower));
+await setVariableValue('deltaExportPower', Math.round(deltaExportPower));
 
 
 // Haal de opgeslagen waarden op en log ze
@@ -43,6 +50,5 @@ console.log('Berekende deltaExportPower:', deltaExportPower);
 console.log(`Opgeslagen gemiddelde deltaImportPower: ${storedDeltaImportPower}`);
 console.log(`Opgeslagen gemiddelde deltaExportPower: ${storedDeltaExportPower}`);
 console.log(`Opgeslagen gemiddelde averageBatteryLevel: ${storedAvarageBatteryLevel}`);
- 
- 
- 
+
+
