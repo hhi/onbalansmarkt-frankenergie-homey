@@ -15,12 +15,12 @@ const battery_system = await getVariableValue('battery_system', 'sessy');
 const battery_import = await getVariableValue('battery_import', 'meter_power.import');  
 const battery_export = await getVariableValue('battery_export', 'meter_power.export');
 const battery_level = await getVariableValue('battery_level', 'measure_battery');
-
+const battery_class = await getVariableValue('battery_class', 'battery');
 
 // Zoek naar apparaten met de driverId die "sessy" bevat en de klasse "battery"
 const devices = await Homey.devices.getDevices()
   .then(devices => Object.values(devices)
-    .filter(device => device.driverId.toLowerCase().includes(battery_system) && device.class === 'battery'));
+    .filter(device => device.driverId.toLowerCase().includes(battery_system) && device.class === battery_class));
 
 if (devices.length === 0) {
   throw new Error(`Geen apparaten gevonden met driverId gelijk ${battery_system} bevat en class "battery"`);

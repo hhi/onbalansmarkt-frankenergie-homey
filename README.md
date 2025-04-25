@@ -2,7 +2,7 @@
 
 Homey oplossing voor live-opbrengst rapportage op https://onbalansmarkt.com:
 - Sessy thuisbatterijsysteem (1 tot n batterijen) 
--  of in experimentele fase, support voor AlphaESS thuisbatterijsysteem 
+- In experimentele fase, support voor AlphaESS thuisbatterijsysteem waaronder AlphaESS, HomeVolt of via SolarEdge modbus aangestuurde 
 - Frank Energie slim handelen account
 
 De scripting in deze repository is geschikt gemaakt voor rapportage over meerdere individuele (Sessy)batterijen wat oorspronkelijk ontbrak in het basisscript.  
@@ -49,7 +49,7 @@ Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde bater
 
 
 De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals de AlphaESS. Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan ontbreken bij Sessy, AlphaESS en SolarEdge StoreEdge kWh ont(laad) totalen.
-Zie daarvoor de scripts sessy-setup.js en alphaESS-setup.js:
+Zie daarvoor de scripts sessy-setup.js, alphaESS-setup.js of sigEnergy-setup.js:
 
 | Systeem | Batterij % | kWh laadtotaal | kWh ontlaadtotaal | Driver-Id | Class | delta verwerking |
 |---|---|---|---|---|---|---|
