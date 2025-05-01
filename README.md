@@ -29,13 +29,14 @@ Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. H
 - Sla de inhoud per .js bestand op als Homeyscript, met gelijksoortige naamgeving (naam zonder de extensie);
 - Maak de globale variabelen aan (zie verderop);
 - Maak de Advanced flow aan met daarbij de 'then' Homeyscipt - as script kaartjes, waarbij je per kaartje de naam van het overeenkomstige bestand kiest;
-- Door met de muis op de '23:59 kaartje' te staan, is deze afzonderlijk te starten. Voer eventueel eenmalig uit als setup. De scripts zijn ook  uit te voeren in Homeyscript (< / >) mode zelf natuurlijk.
+- Maak voor je eigen batterij (zonodig) een Homey script aan onder de naam  merk-setup.js en verbind deze zoals in het voorbeeld het sessy-setup Homeyscript;
+- Door met de muis op de '23:59 kaartje' te staan, is deze afzonderlijk te starten. Voer eventueel eenmalig uit als setup mocht je initieel problemen ondervinden. De geleverde scripts zijn ook afzonderlijk uit te voeren in de Homeyscript (< / >) mode sectie zelf natuurlijk (*handig wat betreft logging output*).
 
 
 ![Homey-FrankEnergie](./Homey-FrankEnergie.png)
 
 
-De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Het betreft hier een 'script met argument' kaartje met een komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
+De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Voor het mee kunnen geven van de namen van de variabelen betreft het hier een 'script met argument' kaartje met een explicite komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
 
 ![Homey-variabelen](./Homey-variabelen.png)
 
@@ -48,7 +49,10 @@ Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde bater
 ![Tijdlijn voorbeeld](./Tijdlijn%20voorbeeld.png)
 
 
-De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals de AlphaESS. Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan ontbreken bij Sessy, AlphaESS en SolarEdge StoreEdge kWh ont(laad) totalen.
+De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals o.a. de AlphaESS. 
+(Zie ook [batterij capabilities](./batteries.pdf))
+
+Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan is alleen bij Sessy, AlphaESS en SolarEdge StoreEdge kWh de dag ont(laad)totaal mode van toepassing.
 Zie daarvoor de scripts sessy-setup.js, alphaESS-setup.js of sigEnergy-setup.js:
 
 | Systeem | Batterij % | kWh laadtotaal | kWh ontlaadtotaal | Driver-Id | Class | delta verwerking |
