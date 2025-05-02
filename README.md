@@ -50,7 +50,7 @@ Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde bater
 
 
 De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals o.a. de AlphaESS. 
-(Zie ook [batterij capabilities](./batteries.pdf))
+(Zie ook [batterij capabilities](./batteries.md))
 
 Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan is alleen bij Sessy, AlphaESS en SolarEdge StoreEdge kWh de dag ont(laad)totaal mode van toepassing.
 Zie daarvoor de scripts sessy-setup.js, alphaESS-setup.js of sigEnergy-setup.js:
