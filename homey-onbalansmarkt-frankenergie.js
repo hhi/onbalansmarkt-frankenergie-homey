@@ -7,6 +7,7 @@
  * Auteur: erdebee, met wijzigingen van verschillende gebruikers
 
  *   Update 2025-02-10: hhi, gecombineerd resultaat voor de bijdragende individuele (Sessy) battterijen, met import/export kWhs en batterij-capaciteit
+  *   Update 2025-07-01: hhi, toegevoegd de mogelijkheid om de batterij resultaten te vermenigvuldigen met het aantal deelnemende batterijen
 
 -SESSIE- <ID-EXAMPLE-OUTPUT => {
   "data": {
@@ -225,7 +226,8 @@ class OnbalansMarkt {
                           chargerResult = null,
                           batteryResultEpex = null,
                           batteryResultImbalance = null,
-                          batteryResultCustom = null
+                          batteryResultCustom = null,
+                          mode = null
                         }) {
     // Validate required fields
     if (!timestamp || !batteryResult || !batteryResultTotal) {
@@ -247,7 +249,8 @@ class OnbalansMarkt {
       ...(chargerResult !== null && { chargerResult: chargerResult.toString() }),
       ...(batteryResultEpex !== null && { batteryResultEpex: batteryResultEpex.toString() }),
       ...(batteryResultImbalance !== null && { batteryResultImbalance: batteryResultImbalance.toString() }),
-      ...(batteryResultCustom !== null && { batteryResultCustom: batteryResultCustom.toString() })
+      ...(batteryResultCustom !== null && { batteryResultCustom: batteryResultCustom.toString() }),
+      ...(mode !== null && { mode: mode.toString() })
     };
     
     try {
@@ -311,6 +314,9 @@ const batteries = await frank.getSmartBatteries();
 let currentTime = new Date();
 
 // wanneer je de opgenomen en geleverde kWhs beschikbaar hebt van je batterij, dan kun je die hier ophalen en aan onderstaande variabelen toewijzen.
+// wat betreft de kwhCharged en kwhDischarged variabelen, deze is nu een gemiddelde over de gehele set van batterijen.
+// we moeten deze waarde nog vermenigvuldigen met het aantal deelnemende (en daardoor bijdragende) batterijen
+
 let kwhCharged  = await homeyVars.getVariableValue('deltaImportPower', null); 
 let kwhDischarged = await homeyVars.getVariableValue('deltaExportPower', null);
 let battCharged = await homeyVars.getVariableValue('averageBatteryLevel', null);
@@ -323,34 +329,69 @@ let accumulatedPeriodEpexResult = 0;
 let accumulatedPeriodTradingResult = 0;
 let accumulatedPeriodFrankSlim = 0;
 
+// Initialize the loop counter
+let loopCounter = 0;
+
 // Get sessions for each battery
 for (const battery of batteries.data.smartBatteries) {
+  // Increment the loop counter for each battery
+  loopCounter++;
+
   const batteryId = battery.id;
   const sessions = await frank.getSmartBatterySessions(
     batteryId,
     currentTime,
     currentTime
   );
-  console.log("-SESSIE-",batteryId, "=>",JSON.stringify(sessions,null,2));
+  console.log("-SESSIE-", batteryId, "=>", JSON.stringify(sessions, null, 2));
   accumulatedPeriodTotalResult += sessions.data.smartBatterySessions.periodTotalResult;
-    accumulatedTotalTradingResult += sessions.data.smartBatterySessions.totalTradingResult;
-    accumulatedPeriodEpexResult += sessions.data.smartBatterySessions.periodEpexResult;
-    accumulatedPeriodTradingResult += sessions.data.smartBatterySessions.periodTradingResult;
-    accumulatedPeriodFrankSlim += sessions.data.smartBatterySessions.periodFrankSlim;
+  accumulatedTotalTradingResult += sessions.data.smartBatterySessions.totalTradingResult;
+  accumulatedPeriodEpexResult += sessions.data.smartBatterySessions.periodEpexResult;
+  accumulatedPeriodTradingResult += sessions.data.smartBatterySessions.periodTradingResult;
+  accumulatedPeriodFrankSlim += sessions.data.smartBatterySessions.periodFrankSlim;
 }
 
+// Multiply kwhCharged and kwhDischarged by the loop counter, needed to get the accumulated charged and discharged kWhs
+if (kwhCharged !== null) {
+  kwhCharged *= loopCounter;
+  console.log(`kwhCharged over alle deelnemende batterijen: ${kwhCharged}`);
+}
+if (kwhDischarged !== null) {
+  kwhDischarged *= loopCounter;
+  console.log(`kwhDischarged over alle deelnemende batterijen: ${kwhDischarged}`);
+}
 
-  
-  await onbalansmarkt.sendMeasurement({
-    timestamp: currentTime,
-     batteryResult: accumulatedPeriodTotalResult,
-     batteryResultTotal: accumulatedTotalTradingResult,
-	 batteryCharge: battCharged, 
-     loadBalancingActive: "off", // Stuur hier enkel 'on' in wanneer de batterij op dit moment beperkt is in zijn vermogen door load balancing
-     chargedToday: kwhCharged !== null ? Math.round(kwhCharged) : null,
-     dischargedToday: kwhDischarged !== null ? Math.round(kwhDischarged) : null,
-     batteryResultEpex: accumulatedPeriodEpexResult,
-     batteryResultImbalance: accumulatedPeriodTradingResult,
-     batteryResultCustom: accumulatedPeriodFrankSlim
-  });
+// Example output for the measurement to be sent to Onbalansmarkt.com
+// {
+//   "timestamp": "2025-01-20T16:00:00Z",
+//   "batteryResult": "8.80",
+//   "batteryResultTotal": "1004.75",
+//   "batteryResultEpex": "-1.40",
+//   "batteryResultImbalance": "9.60",
+//   "batteryResultCustom": "0.60",
+//   "batteryCharge": "76",
+//   "batteryPower": "-9000",
+//   "chargedToday": "11",
+//   "dischargedToday": "8",
+//   "loadBalancingActive": "on", (on/off)
+//   "solarResult": "string",
+//   "chargerResult": "string",
+//   "totalBatteryCycles": "143",
+//   "mode": "imbalance" (imbalance/imbalance_aggressive/manual/day_ahead/self_consumption/self_consumption_plus)
+// }
+
+// Send the measurement to Onbalansmarkt.com
+await onbalansmarkt.sendMeasurement({
+  timestamp: currentTime,
+  batteryResult: accumulatedPeriodTotalResult,
+  batteryResultTotal: accumulatedTotalTradingResult,
+  batteryCharge: battCharged,
+  loadBalancingActive: "off", // Stuur hier enkel 'on' in wanneer de batterij op dit moment beperkt is in zijn vermogen door load balancing
+  chargedToday: kwhCharged !== null ? Math.round(kwhCharged) : null,
+  dischargedToday: kwhDischarged !== null ? Math.round(kwhDischarged) : null,
+  batteryResultEpex: accumulatedPeriodEpexResult,
+  batteryResultImbalance: accumulatedPeriodTradingResult,
+  batteryResultCustom: accumulatedPeriodFrankSlim,
+  mode: "imbalance", 
+});
 
