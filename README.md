@@ -27,13 +27,13 @@ Enkele features waarmee het basisscript is uitgebreid:
 - automatische bepaling van de handelsmodus (onbalans, zelfconsumptie)
 - scripting is geanonimiseerd door login credentionals en de benodigde API-key extern aan het script aan te bieden;
 - periode instelbaar van upload van de meetgegevens naar onbalansmarkt.com;
-- het is relatief eenvoudig een ander merk batterij zoals te bevragen, zie de **systeemnaam**-setup.js als voorbeeld, waarin de benodigde device capabilities per batterij staan waarover gerapporteerd.
+- het is relatief eenvoudig een ander merk batterij (waaronder AlphaESS) te bevragen, zie de **systeemnaam**-setup.js als voorbeeld, waarin de benodigde device capabilities per batterij staan waarover gerapporteerd.
 
 ## Homey Advanced Flow
 
 Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. Helaas biedt Homey geen makkelijke manier aan om dit soort flows te exporteren cq importeren. Dit is handwerk en vergt kennis van hoe je een Advanced Flow kunt designen.
 
-- Sla de inhoud per .js bestand op als Homeyscript, met gelijksoortige naamgeving (naam zonder de extensie);
+- Sla de inhoud per (javascript) .js bestand op als Homeyscript, met gelijksoortige naamgeving (naam zonder de extensie);
 - Maak de globale variabelen aan (zie verderop);
 - Maak de Advanced flow aan met daarbij de 'then' Homeyscipt - as script kaartjes, waarbij je per kaartje de naam van het overeenkomstige bestand kiest;
 - Maak voor je eigen batterij (zonodig) een Homey script aan onder de naam  merk-setup.js en verbind deze zoals in het voorbeeld het sessy-setup Homeyscript;
@@ -62,6 +62,30 @@ Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde bater
 
 De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals o.a. de AlphaESS.
 (Zie ook [batterij capabilities](./batteries.md))
+```javascript
+//excerpt uit sessy-setup.js als voorbeeld
+
+// bepaal de device capabilities per battery systeem, en of de delta bepaald moet worden
+await setVariableValue('battery_system', 'sessy');
+console.log('battery_system:', await getVariableValue('battery_system', 'default'));
+
+await setVariableValue('battery_class', 'battery');
+console.log('battery_class:', await getVariableValue('battery_class', 'default'));
+
+
+await setVariableValue('battery_import', 'meter_power.import');
+console.log('battery_import:', await getVariableValue('battery_import', 'default'));
+
+await setVariableValue('battery_export', 'meter_power.export');
+console.log('battery_export:', await getVariableValue('battery_export', 'default'));
+
+await setVariableValue('battery_level', 'measure_battery');
+console.log('battery_level:', await getVariableValue('battery_level', 'default'));
+
+
+await setVariableValue('battery_delta', 'Yes');
+console.log('battery_delta:', await getVariableValue('battery_delta', 'Yes'));
+```
 
 Bij batterijsystemen die al voorzien in dagtotalen moet de extra delta verwerking stop op 'No' taan. Voor zover nu na te gaan is alleen bij Sessy, AlphaESS en SolarEdge StoreEdge kWh de dag ont(laad)totaal mode van toepassing.
 Zie daarvoor de scripts sessy-setup.js, alphaESS-setup.js of sigEnergy-setup.js:
