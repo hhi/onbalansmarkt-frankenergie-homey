@@ -2,20 +2,24 @@
 
 Homey oplossing voor live-opbrengst rapportage op [onbalansmarkt.com](https://onbalansmarkt.com):
 
-- Sessy thuisbatterijsysteem (1 tot n batterijen)
+- (Sessy) thuisbatterijsysteem (1 tot n batterijen)
 - In experimentele fase, support voor diverse thuisbatterijsystemen waaronder AlphaESS, HomeVolt of de via SolarEdge modbus aangestuurde configuraties.
 - Frank Energie slim handelen account
 
-De scripting in deze repository als copy van het originele script is geschikt gemaakt voor rapportage over meerdere individuele (Sessy)batterijen, omdat het basisscript hierin niet voorzag, d.w.z. alleen de eerste deelnemende batterij ging mee in de rapportage.
-
-Voorbeeld:
+*Voorbeeld:*
 ![hhi-onbalans](./hhi-onbalansmarkt.png)
+
+### uitgebreide scripting
+
+De scripting in deze repository als copy van het originele script is geschikt gemaakt voor rapportage over meerdere individuele (Sessy)batterijen, omdat het basisscript hierin niet voorzag, d.w.z. alleen de eerste deelnemende batterij ging mee in de rapportage.
 
 De repository bevat de benodigde Homeyscripts waarmee je een Advanced Flow kunt maken, zodat je onbalans resultaat periodiek (instelbaar) via de API kunt rapporteren naar de service.
 
 Je hebt naast je account creditionals van je energiemaatschappij ook een API key nodig die je op kunt vragen na aanmelding bij Onbalansmarkt.
 
-Enkele features waarmeer het basisscript is uitgebreid:
+## features
+
+Enkele features waarmee het basisscript is uitgebreid:
 
 - rapportage over de gehele batterijcollectie aan deelnemende thuisbatterijen;
 - rapportage van het actuele batterijpercentage gemiddelde;
@@ -23,7 +27,9 @@ Enkele features waarmeer het basisscript is uitgebreid:
 - automatische bepaling van de handelsmodus (onbalans, zelfconsumptie)
 - scripting is geanonimiseerd door login credentionals en de benodigde API-key extern aan het script aan te bieden;
 - periode instelbaar van upload van de meetgegevens naar onbalansmarkt.com;
-- het is relatief eenvoudig een ander merk batterij zoals te bevragen, zie de **systeemk**-setup.js als voorbeeld, waarin de benodigde device capabilities per batterij staan waarover gerapporteerd. 
+- het is relatief eenvoudig een ander merk batterij zoals te bevragen, zie de **systeemnaam**-setup.js als voorbeeld, waarin de benodigde device capabilities per batterij staan waarover gerapporteerd.
+
+## Homey Advanced Flow
 
 Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. Helaas biedt Homey geen makkelijke manier aan om dit soort flows te exporteren cq importeren. Dit is handwerk en vergt kennis van hoe je een Advanced Flow kunt designen.
 
@@ -33,18 +39,26 @@ Onderstaand het screenshot hoe de gebruiker een Homey Advanced Flow kan maken. H
 - Maak voor je eigen batterij (zonodig) een Homey script aan onder de naam  merk-setup.js en verbind deze zoals in het voorbeeld het sessy-setup Homeyscript;
 - Door met de muis op de '23:59 kaartje' te staan, is deze afzonderlijk te starten. Voer eventueel eenmalig uit als setup mocht je initieel problemen ondervinden. De geleverde scripts zijn ook afzonderlijk uit te voeren in de Homeyscript (< / >) mode sectie zelf natuurlijk (*handig wat betreft logging output*).
 
+### flow
+
 ![Homey-FrankEnergie](./Homey-FrankEnergie.png)
+
+### autorisatie
 
 De login/password combinatie kan de gebruiker zelf opvoeren als Homey Flow variabele, zodat het script voortaan geen wijziging behoeft. Zie hiervoor onderstaand screenshot want de naamgeving en de manier van doorgeven moet overeenkomstig zijn. Voor het mee kunnen geven van de namen van de variabelen betreft het hier een 'script met argument' kaartje met een explicite komma tussen de variable namen: "frankenergie_id,frankenergie_pw,onbalansmarkt_apikey"
 
 ![Homey-variabelen](./Homey-variabelen.png)
 
-De Sessy API (als bijvoorbeeld) levert geen dagtotalen (alleen grand totals). Voor de rapportage per dag is opgelost met een delta gemiddelde te bepalen t.o.v. voorgaande dag.
+### rapportage
+
+De Sessy API (als bijvoorbeeld) leverde initieel geen dagtotalen (alleen grand totals). Voor de rapportage per dag is dit probleem opgelost door een delta gemiddelde te bepalen t.o.v. voorgaande dag.
 Instelbaar welke periode (om de 15 minuten in dit voorbeeld) wordt de API van onbalansmarkt.com gevoed met nieuwe gegevens.
 
 Op de tijdlijn krijgt de Homey gebruiker een feed te zien van aangeleverde baterijpercentage en de naar beneden afgeroden (ont)laad kWhs. Bij de 'teller op nul' notificatie zie je de vorige dag intern opgeslagen waarden.
 
 ![Tijdlijn voorbeeld](./Tijdlijn%20voorbeeld.png)
+
+## ondersteuning merkgebonden batterijsystemen
 
 De scripting is relatief eenvoudig aan te passen voor andere batterijsystemen dan Sessy, zoals o.a. de AlphaESS.
 (Zie ook [batterij capabilities](./batteries.md))
@@ -67,3 +81,16 @@ Zie daarvoor de scripts sessy-setup.js, alphaESS-setup.js of sigEnergy-setup.js:
 | SolarEdge StoreEdge | measure_battery | meter_power.import | meter_power.export | storeedge | solarpanel | Yes |
 
 De aan SolarEdge Modbus geleerde batterijen worden naar verwachting bevraagd via de 'SolarEdge + Growatt TCP modbus' App. Maak je eigen setup script op basis van bovenstaande waarden en vervang in de flow het 'sessy-setup' kaartje met je eigen homeyscript variant.
+
+### afgeleide handelsmodus bepaling
+
+De bevraging van welke handelsmodus van toepassing, wordt bepaald door een mapping tussen Frank Energie gerelateerde gegevens aan die van de Onbalansmarkt API. De uiteindelijk bepaalde handelsmodus (mode) wordt in de code als volgt gemapt.
+
+| Handelsmode            | Handelsstrategie | Uiteindelijke handelsmodeus                 |
+|------------------------|------------------|----------------------|
+| IMBALANCE_TRADING      | STANDARD         | imbalance            |
+| IMBALANCE_TRADING      | AGGRESSIVE       | imbalance_aggressive |
+| SELF_CONSUMPTION_MIX   | -                | self_consumption_plus|
+| Other                  | -                | manual               |
+| ? | ? | self_consumption (n/a)|
+| ? | ? | day_ahead (n/a) |
