@@ -7,7 +7,8 @@
  * Auteur: erdebee, met wijzigingen van verschillende gebruikers
 
  *   Update 2025-02-10: hhi, gecombineerd resultaat voor de bijdragende individuele (Sessy) battterijen, met import/export kWhs en batterij-capaciteit
-  *   Update 2025-07-01: hhi, toegevoegd de mogelijkheid om de batterij resultaten te vermenigvuldigen met het aantal deelnemende batterijen
+*   Update 2025-07-01: hhi, toegevoegd de mogelijkheid om de batterij resultaten te vermenigvuldigen met het aantal deelnemende batterijen
+*  Update 2025-07-03: hhi, automatische bepaling van de handelsmodus en handelsstrategie van de batterij, en deze doorgeven aan Onbalansmarkt.com
 
 -SESSIE- <ID-EXAMPLE-OUTPUT => {
   "data": {
@@ -97,37 +98,6 @@ class FrankEnergie {
     return this.auth;
   }
   
-  async getPrices(startDate, endDate) {
-    const query = {
-      query: `
-                query MarketPrices($startDate: Date!, $endDate: Date!) {
-                    marketPricesElectricity(startDate: $startDate, endDate: $endDate) {
-                        from
-                        till
-                        marketPrice
-                        marketPriceTax
-                        sourcingMarkupPrice
-                        energyTaxPrice
-                    }
-                    marketPricesGas(startDate: $startDate, endDate: $endDate) {
-                        from
-                        till
-                        marketPrice
-                        marketPriceTax
-                        sourcingMarkupPrice
-                        energyTaxPrice
-                    }
-                }
-            `,
-      variables: {
-        startDate: new Date(startDate.toLocaleString('en-US', { timeZone })).toISOString().split('T')[0],
-        endDate: new Date(endDate.toLocaleString('en-US', { timeZone })).toISOString().split('T')[0]
-      },
-      operationName: "MarketPrices"
-    };
-    
-    return await this.query(query);
-  }
   
   async getSmartBatteries() {
     if (!this.auth) {
@@ -199,6 +169,55 @@ class FrankEnergie {
       }
     };
     
+    return await this.query(query);
+  }
+  
+  async getSmartBattery(deviceId) {
+    if (!this.auth) {
+      throw new Error("Authentication required");
+    }
+
+    const query = {
+      query: `
+        query SmartBattery($deviceId: String!) {
+          smartBattery(deviceId: $deviceId) {
+            brand
+            capacity
+            createdAt
+            externalReference
+            id
+            maxChargePower
+            maxDischargePower
+            provider
+            updatedAt
+            settings {
+              aggressivenessPercentage
+              algorithm
+              batteryMode
+              createdAt
+              effectiveTill
+              imbalanceTradingAggressiveness
+              imbalanceTradingStrategy
+              selfConsumptionTradingAllowed
+              selfConsumptionTradingThresholdPrice
+              tradingAlgorithm
+              updatedAt
+              requestedUpdate {
+                aggressivenessPercentage
+                batteryMode
+                effectiveFrom
+                imbalanceTradingStrategy
+              }
+            }
+          }
+        }
+      `,
+      operationName: "SmartBattery",
+      variables: {
+        deviceId
+      }
+    };
+
     return await this.query(query);
   }
   
@@ -361,6 +380,32 @@ if (kwhDischarged !== null) {
   console.log(`kwhDischarged over alle deelnemende batterijen: ${kwhDischarged}`);
 }
 
+//aanroep van  getBattery, om de handelsmode ne handelstrategie van de batterij op te halen
+const battery = await frank.getSmartBattery(batteries.data.smartBatteries[0].id);
+console.log("-BATTERY- ", JSON.stringify(battery) );
+
+const handelsmode = battery.data.smartBattery.settings.batteryMode
+console.log(`Handelsmode: ${handelsmode}`)
+
+const handelsstrategie = battery.data.smartBattery.settings.imbalanceTradingStrategy
+console.log(`Handelsstrategie: ${handelsstrategie}`)
+
+// bepaal welke handelsmodus we gaan gebruiken, afhankelijk van de handelsmode en handelsstrategie van de batterij
+let handelsmodus = "imbalance"; //default modus is imbalance
+
+if (handelsmode === "IMBALANCE_TRADING" && handelsstrategie === "STANDARD") {
+  handelsmodus = "imbalance";
+} else if (handelsmode === "IMBALANCE_TRADING" && handelsstrategie === "AGGRESSIVE") {
+  handelsmodus = "imbalance_aggressive";
+} else if (handelsmode === "SELF_CONSUMPTION_MIX") {
+  handelsmodus = "self_consumption_plus";
+} else {
+  handelsmodus = "manual";
+}
+
+console.log(`Determined mode: ${handelsmodus}`);
+
+
 // Example output for the measurement to be sent to Onbalansmarkt.com
 // {
 //   "timestamp": "2025-01-20T16:00:00Z",
@@ -392,6 +437,6 @@ await onbalansmarkt.sendMeasurement({
   batteryResultEpex: accumulatedPeriodEpexResult,
   batteryResultImbalance: accumulatedPeriodTradingResult,
   batteryResultCustom: accumulatedPeriodFrankSlim,
-  mode: "imbalance", 
+  mode: handelsmodus, 
 });
 
