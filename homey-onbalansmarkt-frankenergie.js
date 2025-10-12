@@ -39,6 +39,16 @@
   }
 }
 
+NIEUW:
+      "periodEpexResult": 0,						accumulatedPeriodEpexResult
+      "periodFrankSlim": 0,							accumulatedPeriodFrankSlim
+      "periodImbalanceResult": 0,					accumulatedImbalanceResult
+      "periodTotalResult": 0,						accumulatedPeriodTotalResult
+      "periodTradeIndex": null,
+      "periodTradingResult": 0,						accumulatedPeriodTradingResult
+      "sessions": [
+        {
+          "cumulativeResult": 457.43570574110197,		accumulatedTotalTradingResult
 
 
  */
@@ -346,6 +356,7 @@ let accumulatedTotalTradingResult = 0;
 let accumulatedPeriodEpexResult = 0;
 let accumulatedPeriodTradingResult = 0;
 let accumulatedPeriodFrankSlim = 0;
+let accumulatedImbalanceResult = 0;
 
 // Initialize the loop counter
 let loopCounter = 0;
@@ -367,6 +378,7 @@ for (const battery of batteries.data.smartBatteries) {
   accumulatedPeriodEpexResult += sessions.data.smartBatterySessions.periodEpexResult;
   accumulatedPeriodTradingResult += sessions.data.smartBatterySessions.periodTradingResult;
   accumulatedPeriodFrankSlim += sessions.data.smartBatterySessions.periodFrankSlim;
+  accumulatedImbalanceResult += sessions.data.smartBatterySessions.periodImbalanceResult
 
 }
 
@@ -376,6 +388,7 @@ console.log(`Total Trading Result:   ${accumulatedTotalTradingResult.toFixed(2)}
 console.log(`Period EPEX Result:     ${accumulatedPeriodEpexResult.toFixed(2)}`);
 console.log(`Period Trading Result:  ${accumulatedPeriodTradingResult.toFixed(2)}`);
 console.log(`Period Frank Slim:      ${accumulatedPeriodFrankSlim.toFixed(2)}`);
+console.log(`Imbalance Result:       ${accumulatedImbalanceResult.toFixed(2)}`);
 console.log('===================================');
 
 // Multiply kwhCharged and kwhDischarged by the loop counter, needed to get the accumulated charged and discharged kWhs
@@ -445,7 +458,7 @@ await onbalansmarkt.sendMeasurement({
   chargedToday: kwhCharged !== null ? Math.round(kwhCharged) : null,
   dischargedToday: kwhDischarged !== null ? Math.round(kwhDischarged) : null,
   batteryResultEpex: accumulatedPeriodEpexResult,
-  batteryResultImbalance: accumulatedPeriodTradingResult,
+  batteryResultImbalance: accumulatedImbalanceResult,
   batteryResultCustom: accumulatedPeriodFrankSlim,
   mode: handelsmodus, 
 });
